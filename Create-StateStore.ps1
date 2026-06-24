@@ -38,7 +38,7 @@ Set-AzContext -Tenant $TenantId -Subscription $SubscriptionId -ErrorAction Stop 
 Set-AzDefault -ResourceGroupName $ResourceGroupName -ErrorAction Stop;
 
 # Create the Storage Account within the specified subscription and resource group
-$storageAccountName = "aetherforge" + (Get-Random -Minimum 1000 -Maximum 9999);
+$storageAccountName = -join ((48..57 + 97..122) | Get-Random -Count 24 | ForEach-Object { [char]$_ })
 Write-Verbose -Message "Creating Storage Account '$storageAccountName'";
 $storageAccount = New-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $storageAccountName -Location (Get-AzResourceGroup -Name $ResourceGroupName).Location -SkuName Standard_LRS -Kind StorageV2 -ErrorAction Stop;
 
