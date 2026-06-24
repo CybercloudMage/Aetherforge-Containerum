@@ -1,3 +1,45 @@
+<#
+.SYNOPSIS
+Creates an Azure Storage Account and container for Terraform state storage.
+
+.DESCRIPTION
+This script prepares a Terraform remote state backend in Azure by creating a new
+Storage Account and a private blob container named 'tfstates' in the specified
+resource group. It also assigns the "Storage Blob Data Contributor" role on the
+new Storage Account to the provided Service Principal (ClientId).
+
+If running in GitHub Actions, the script writes key outputs to GITHUB_OUTPUT for
+downstream workflow steps.
+
+.PARAMETER TenantId
+The Microsoft Entra tenant ID used to set the Azure context.
+
+.PARAMETER ClientId
+The application (client) ID of the Service Principal that will receive data-plane
+access to Terraform state in the created Storage Account.
+
+.PARAMETER SubscriptionId
+The Azure subscription ID where resources will be created.
+
+.PARAMETER ResourceGroupName
+The name of the Azure resource group where the Storage Account will be created.
+
+.OUTPUTS
+When GITHUB_OUTPUT is set, appends the following outputs:
+- storage_account_name
+- storage_account_id
+- storage_container_name
+
+.EXAMPLE
+.\Create-StateStore.ps1 -TenantId "00000000-0000-0000-0000-000000000000" -ClientId "11111111-1111-1111-1111-111111111111" -SubscriptionId "22222222-2222-2222-2222-222222222222" -ResourceGroupName "rg-terraform-state"
+
+Creates a Storage Account in the specified resource group, creates the 'tfstates'
+container, and grants the Service Principal blob data contributor permissions.
+
+.NOTES
+Requires Az.Accounts, Az.Resources, and Az.Storage modules.
+#>
+
 param(
 	[Parameter(Mandatory = $true)]
 	[string]$TenantId,
@@ -49,11 +91,6 @@ $storageAccount = New-AzStorageAccount -ResourceGroupName $ResourceGroupName -Na
 $containerName = 'tfstates'
 Write-Verbose -Message "Creating Storage Container '$containerName' in Storage Account '$($storageAccount.StorageAccountName)'";
 New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -Permission Off -ErrorAction Stop | Out-Null;
-
-# Set the Service Principal for deployment to have Storage Blob Data Contributor role on the Storage Account for Terraform state management
-$spObjectId = (Get-AzADServicePrincipal -ApplicationId $ClientId -ErrorAction Stop).Id
-Write-Verbose -Message "Assigning 'Storage Blob Data Contributor' role to Service Principal '$ClientId' on Storage Account '$($storageAccount.StorageAccountName)'";
-New-AzRoleAssignment -ObjectId $spObjectId -RoleDefinitionName "Storage Blob Data Contributor" -Scope $storageAccount.Id -ErrorAction Stop | Out-Null;
 
 # Confirmation that the Storage Account was created successfully
 Write-Verbose -Message "Storage Account '$($storageAccount.StorageAccountName)' created successfully in Resource Group '$ResourceGroupName' with Location '$($storageAccount.Location)'."
