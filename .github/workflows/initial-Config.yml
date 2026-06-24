@@ -36,7 +36,7 @@ jobs:
         uses: azure/powershell@v3
         with:
           azPSVersion: 'latest'
-          inlineScript: ./Create-StateStore.ps1 -TenantId ${{ secrets.AZURE_TENANT_ID }} -SubscriptionId ${{ secrets.AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ secrets.AZURE_RESOURCE_GROUP_NAME }};
+          inlineScript: ./Create-StateStore.ps1 -TenantId ${{ secrets.AZURE_TENANT_ID }} -SubscriptionId ${{ secrets.AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ secrets.AZURE_RESOURCE_GROUP_NAME }} -ClientId ${{ secrets.AZURE_CLIENT_ID }} -Verbose;
 
       - name: GitHub App login for further actions
         id: ghe-varsmgmt-login

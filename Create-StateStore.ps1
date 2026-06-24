@@ -2,6 +2,9 @@ param(
 	[Parameter(Mandatory = $true)]
 	[string]$TenantId,
 
+    [Parameter(Mandatory = $true)]
+	[string]$ClientId,
+
 	[Parameter(Mandatory = $false)]
 	[string]$SubscriptionId,
 
@@ -45,7 +48,12 @@ $storageAccount = New-AzStorageAccount -ResourceGroupName $ResourceGroupName -Na
 # Create the Terraform state container in the Storage Account
 $containerName = 'tfstates'
 Write-Verbose -Message "Creating Storage Container '$containerName' in Storage Account '$($storageAccount.StorageAccountName)'";
-New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -Permission Off -ErrorAction Stop | Out-Null
+New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -Permission Off -ErrorAction Stop | Out-Null;
+
+# Set the Service Principal for deployment to have Storage Blob Data Contributor role on the Storage Account for Terraform state management
+$spObjectId = (Get-AzADServicePrincipal -ApplicationId $ClientId -ErrorAction Stop).Id
+Write-Verbose -Message "Assigning 'Storage Blob Data Contributor' role to Service Principal '$ClientId' on Storage Account '$($storageAccount.StorageAccountName)'";
+New-AzRoleAssignment -ObjectId $spObjectId -RoleDefinitionName "Storage Blob Data Contributor" -Scope $storageAccount.Id -ErrorAction Stop | Out-Null;
 
 # Confirmation that the Storage Account was created successfully
 Write-Verbose -Message "Storage Account '$($storageAccount.StorageAccountName)' created successfully in Resource Group '$ResourceGroupName' with Location '$($storageAccount.Location)'."
