@@ -34,7 +34,23 @@ foreach ($moduleName in $requiredModules) {
 }
 
 # Connect to Azure using the underlying set PowerShell context and set the default subscription and resource group for subsequent operations
-Set-AzContext -Tenant $TenantId -Subscription $SubscriptionId -ErrorAction Stop | Out-Null;
+$contextTenantId = if ($env:AZURE_TENANT_ID) { $env:AZURE_TENANT_ID } else { $TenantId }
+$contextSubscriptionId = if ($env:AZURE_SUBSCRIPTION_ID) { $env:AZURE_SUBSCRIPTION_ID } else { $SubscriptionId }
+
+# Authenticate non-interactively using GitHub Actions-provided tokens when no Az context exists
+if (-not (Get-AzContext -ErrorAction SilentlyContinue)) {
+    $contextClientId = if ($env:AZURE_CLIENT_ID) { $env:AZURE_CLIENT_ID } elseif ($env:ARM_CLIENT_ID) { $env:ARM_CLIENT_ID } else { $null }
+    $contextAccessToken = if ($env:AZURE_ACCESS_TOKEN) { $env:AZURE_ACCESS_TOKEN } elseif ($env:ARM_ACCESS_TOKEN) { $env:ARM_ACCESS_TOKEN } else { $null }
+
+    if ($contextAccessToken -and $contextTenantId -and $contextSubscriptionId) {
+        Connect-AzAccount -AccessToken $contextAccessToken -AccountId ($contextClientId ?? 'github-actions') -Tenant $contextTenantId -Subscription $contextSubscriptionId -ErrorAction Stop | Out-Null
+    }
+    elseif ($env:AZURE_FEDERATED_TOKEN_FILE -and (Test-Path -Path $env:AZURE_FEDERATED_TOKEN_FILE) -and $contextClientId -and $contextTenantId -and $contextSubscriptionId) {
+        $federatedToken = Get-Content -Path $env:AZURE_FEDERATED_TOKEN_FILE -Raw -ErrorAction Stop
+        Connect-AzAccount -ServicePrincipal -ApplicationId $contextClientId -Tenant $contextTenantId -Subscription $contextSubscriptionId -FederatedToken $federatedToken -ErrorAction Stop | Out-Null
+    }
+}
+Set-AzContext -Tenant $contextTenantId -Subscription $contextSubscriptionId -ErrorAction Stop | Out-Null;
 Set-AzDefault -ResourceGroupName $ResourceGroupName -ErrorAction Stop;
 
 # Create the Storage Account within the specified subscription and resource group
