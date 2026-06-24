@@ -1,0 +1,18 @@
+{
+	"[yaml]": {
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true
+	},
+	"[github-actions-workflow]": {
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true
+	},
+	"[terraform]": {
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true
+	},
+	"[hcl]": {
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true
+	}
+}
