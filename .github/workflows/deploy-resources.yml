@@ -37,6 +37,11 @@ jobs:
           sparse-checkout-cone-mode: true
           path: ./
 
+      - name: Check if files in root of Runner
+        run: |
+          echo "Files in root of Runner:"
+          ls -la
+
       - name: Authenticate to the Azure environment using Client ID and Client Secret
         uses: azure/login@v3
         with:
