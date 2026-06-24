@@ -1,0 +1,65 @@
+name: Deploy resources to Azure platform
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - poc
+          - dev
+          - test
+          - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    permissions: 
+      contents: read
+      id-token: write
+    env:
+      TF_VAR_RESOURCE_GROUP_NAME: ${{ secrets.AZURE_RESOURCE_GROUP_NAME }}
+    steps:
+      - name: Set up Terraform on Runner
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.6
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            iac
+          sparse-checkout-cone-mode: true
+          path: ./
+
+      - name: Authenticate to the Azure environment using Client ID and Client Secret
+        uses: azure/login@v3
+        with:
+          creds: >-
+            {"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}
+
+      - name: Terraform initialization
+        run: |
+            terraform init -input=false \
+            -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+            -backend-config="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP_NAME }}" \
+            -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=tfstates" \
+            -backend-config="key=${{ github.event.repository.name }}-${{ github.event.inputs.environment }}.tfstate"
+
+      - name: Terraform validation and planning
+        run: |
+          terraform fmt -recursive
+          terraform validate
+          terraform plan -out=tfplan -input=false
+
+      - name: Terraform apply
+        run: |
+          terraform apply -input=false tfplan
+            
