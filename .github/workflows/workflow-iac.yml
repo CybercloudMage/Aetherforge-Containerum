@@ -23,6 +23,8 @@ jobs:
       TF_VAR_ROOT_RG_LOCATION: ${{ vars.AZURE_ROOT_LOCATION }}
       TF_VAR_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       TF_VAR_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_USE_OIDC: true
+      ARM_USE_AZUREAD: true
     steps:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v4
@@ -49,13 +51,26 @@ jobs:
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           allow-no-subscriptions: true
+
+      - name: Validate backend configuration inputs
+        run: |
+          if [ -z "${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" ] || [ -z "${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}" ] || [ -z "${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}" ] || [ -z "${{ secrets.TFSTATE_CONTAINER_NAME }}" ] || [ -z "${{ secrets.TFSTATE_TENANT_ID }}" ] || [ -z "${{ secrets.TFSTATE_CLIENT_ID }}" ]; then
+            echo "Missing one or more required TFSTATE_* backend secrets."
+            exit 1
+          fi
+
+          if [ "${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" = "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+            echo "TFSTATE_SUBSCRIPTION_ID must be different from AZURE_SUBSCRIPTION_ID."
+            exit 1
+          fi
 
       - name: Terraform Init
         run: |
           terraform init -input=false \
-          -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
-          -backend-config="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+          -backend-config="tenant_id=${{ secrets.TFSTATE_TENANT_ID }}" \
+          -backend-config="client_id=${{ secrets.TFSTATE_CLIENT_ID }}" \
           -backend-config="subscription_id=${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" \
           -backend-config="resource_group_name=${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}" \
           -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}" \

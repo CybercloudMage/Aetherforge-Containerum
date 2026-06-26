@@ -42,7 +42,7 @@ variable "SUBSCRIPTION_ID" {
   description = "The Azure Subscription ID"
   type        = string
   validation {
-    condition     = can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$", var.TENANT_ID))
-    error_message = "TENANT_ID must be a valid GUID."
+    condition     = can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$", var.SUBSCRIPTION_ID))
+    error_message = "SUBSCRIPTION_ID must be a valid GUID."
   }
 }
