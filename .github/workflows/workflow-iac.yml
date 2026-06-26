@@ -19,7 +19,6 @@ jobs:
       group: 'scidomum-int-${{ inputs.environment }}'
       labels: 'scidomum-${{ inputs.environment }}-ubuntu-amd64'
     env:
-      TF_LOG: trace
       TF_VAR_ENVIRONMENT: ${{ inputs.environment }}
       TF_VAR_ROOT_RG_LOCATION: ${{ vars.AZURE_ROOT_LOCATION }}
       TF_VAR_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
