@@ -63,7 +63,6 @@ jobs:
 
       - name: Terraform Init
         run: |
-          az account set --subscription "${{ secrets.TFSTATE_BACKEND_SUBSCRIPTION_ID }}"
           terraform init -input=false \
           -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
           -backend-config="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
