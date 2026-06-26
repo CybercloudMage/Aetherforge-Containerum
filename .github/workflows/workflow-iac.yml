@@ -47,6 +47,13 @@ jobs:
           sparse-checkout-cone-mode: false
           path: ./
 
+      - name: Show the root of the runner work area
+        run: |
+          echo "Root of the runner work area:"
+          ls -alh
+          echo "Current directory:"
+          pwd
+
       - name: Azure federated login
         uses: azure/login@v3
         with:
