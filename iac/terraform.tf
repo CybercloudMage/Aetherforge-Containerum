@@ -1,24 +1,30 @@
 terraform {
   required_version = ">= 1.15.0"
+  
   backend "azurerm" {
     use_azuread_auth = true
-    use_oidc         = true
+    use_oidc_auth = true
   }
+  
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.77.0"
+      version = ">= 4.77.0"
     }
     azapi = {
       source  = "azure/azapi"
-      version = "~> 2.10.0"
+      version = ">= 2.1.0"
     }
   }
 }
 
 provider "azurerm" {
-  subscription_id = var.AZURE_SUBSCRIPTION_ID
+  subscription_id = var.SUBSCRIPTION_ID
+  tenant_id       = var.TENANT_ID
   features {}
 }
 
-provider "azapi" {}
+provider "azapi" {
+  subscription_id = var.SUBSCRIPTION_ID
+  tenant_id       = var.TENANT_ID
+}

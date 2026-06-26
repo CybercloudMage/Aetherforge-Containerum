@@ -1,14 +1,24 @@
-name: Deploy to Dev Environment
+name: Deploy to the dev environment
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'The environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
 
 jobs:
-  deploy-infra:
-    uses: ./.github/workflows/workflow-infra.yml
+  deploy-iac:
+    uses: ./.github/workflows/workflow-iac.yml
     permissions:
       contents: read
       id-token: write
-    secrets: inherit 
+    secrets: inherit
     with:
-      ENVIRONMENT: dev
+      environment: ${{ github.event.inputs.environment }}

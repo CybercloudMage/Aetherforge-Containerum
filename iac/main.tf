@@ -3,6 +3,5 @@ module "root_rg" {
 	version = "~> 0.4"
 
 	name     = "rg-aetherforge-${var.ENVIRONMENT}"
-	location = var.AZURE_ROOT_REGION_NAME
+	location = var.ROOT_RG_LOCATION
 }
-
