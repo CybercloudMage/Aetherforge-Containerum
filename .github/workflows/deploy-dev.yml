@@ -1,0 +1,14 @@
+name: Deploy to Dev Environment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-infra:
+    uses: ./.github/workflows/workflow-infra.yml
+    permissions:
+      contents: read
+      id-token: write
+    secrets: inherit 
+    with:
+      ENVIRONMENT: dev
