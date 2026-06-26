@@ -64,7 +64,7 @@ jobs:
       - name: Validate Azure Login and ability to access Terraform state storage location
         run: |
           az account show
-          az storage account show --name ${{ secrets.TFSTATE_BACKEND_STORAGE_ACCOUNT_NAME }} --resource-group ${{ secrets.TFSTATE_BACKEND_RESOURCE_GROUP_NAME }}
+          az storage account show --subscription ${{ secrets.TFSTATE_BACKEND_SUBSCRIPTION_ID }} --name ${{ secrets.TFSTATE_BACKEND_STORAGE_ACCOUNT_NAME }} --resource-group ${{ secrets.TFSTATE_BACKEND_RESOURCE_GROUP_NAME }}
 
       - name: Terraform Init
         run: |
