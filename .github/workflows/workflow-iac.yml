@@ -60,7 +60,26 @@ jobs:
 
       - name: Validate access to backend storage account
         run: |
-          az storage account show --name ${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }} --resource-group ${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }} --subscription ${{ secrets.TFSTATE_SUBSCRIPTION_ID }} --query "name" -o tsv
+          echo "Validating read access to target backend container..."
+          az storage blob list \
+            --subscription "${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" \
+            --account-name "${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}" \
+            --container-name "${{ steps.condition_values.outputs.repository_name_lower }}" \
+            --num-results 1 \
+            --auth-mode login \
+            --only-show-errors >/dev/null
+
+          echo "Validating credentials are not scoped broader than the target container..."
+          if az storage container list \
+            --subscription "${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" \
+            --account-name "${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}" \
+            --auth-mode login \
+            --only-show-errors >/dev/null 2>&1; then
+            echo "Unexpected permission: credentials can list containers at account scope."
+            exit 1
+          fi
+
+          echo "Access validation passed: readable target container with no account-level container listing."
 
       - name: Confirm add/delete in backend container
         run: |
