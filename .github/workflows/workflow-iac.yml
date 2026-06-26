@@ -34,7 +34,7 @@ jobs:
       - name: Condition values and variables for use
         id: condition_values
         run: |
-          repository_name_lower="$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')"
+          repository_name_lower="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
           echo "repository_name_lower=$repository_name_lower" >> "$GITHUB_OUTPUT"
           echo "Repository name: $repository_name_lower"
 
