@@ -45,15 +45,12 @@ jobs:
           sparse-checkout: |
             iac
           sparse-checkout-cone-mode: false
-          path: ./
 
-      - name: Show the root of the runner work area
+      - name: Move IaC contents to workspace root
         run: |
-          echo "Root of the runner work area:"
-          ls -alh
-          echo "Current directory:"
-          pwd
-
+          cp -a iac/. ./
+          rm -rf iac
+          
       - name: Azure federated login
         uses: azure/login@v3
         with:
