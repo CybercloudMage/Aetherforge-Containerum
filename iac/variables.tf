@@ -52,3 +52,12 @@ variable "AZURE_ROOT_REGION_NAME" {
     error_message = "AZURE_ROOT_REGION_NAME must be a valid supported Azure region short name."
   }
 }
+
+variable "AZURE_SUBSCRIPTION_ID" {
+  description = "The Azure subscription ID where the resources will be deployed."
+  type        = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$", var.AZURE_SUBSCRIPTION_ID))
+    error_message = "AZURE_SUBSCRIPTION_ID must be a valid GUID in Azure subscription ID format (e.g., xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)."
+  }
+}
