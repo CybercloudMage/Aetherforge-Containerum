@@ -19,6 +19,7 @@ jobs:
       group: 'scidomum-int-${{ inputs.environment }}'
       labels: 'scidomum-${{ inputs.environment }}-ubuntu-amd64'
     env:
+      TF_LOG: debug
       TF_VAR_ENVIRONMENT: ${{ inputs.environment }}
       TF_VAR_ROOT_RG_LOCATION: ${{ vars.AZURE_ROOT_LOCATION }}
       TF_VAR_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -68,7 +69,7 @@ jobs:
 
       - name: Terraform Init
         run: |
-          terraform init -input=false \
+          terraform init -input=false  \
           -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
           -backend-config="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
           -backend-config="subscription_id=${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" \
