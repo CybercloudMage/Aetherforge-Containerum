@@ -56,7 +56,7 @@ jobs:
 
       - name: Validate backend configuration inputs
         run: |
-          if [ -z "${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" ] || [ -z "${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}" ] || [ -z "${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}" ] || [ -z "${{ secrets.TFSTATE_CONTAINER_NAME }}" ] || [ -z "${{ secrets.TFSTATE_TENANT_ID }}" ] || [ -z "${{ secrets.TFSTATE_CLIENT_ID }}" ]; then
+          if [ -z "${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" ] || [ -z "${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}" ] || [ -z "${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}" ] || [ -z "${{ secrets.AZURE_TENANT_ID }}" ] || [ -z "${{ secrets.AZURE_CLIENT_ID }}" ]; then
             echo "Missing one or more required TFSTATE_* backend secrets."
             exit 1
           fi
@@ -69,8 +69,8 @@ jobs:
       - name: Terraform Init
         run: |
           terraform init -input=false \
-          -backend-config="tenant_id=${{ secrets.TFSTATE_TENANT_ID }}" \
-          -backend-config="client_id=${{ secrets.TFSTATE_CLIENT_ID }}" \
+          -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+          -backend-config="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
           -backend-config="subscription_id=${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" \
           -backend-config="resource_group_name=${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}" \
           -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}" \
