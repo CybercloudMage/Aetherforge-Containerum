@@ -22,6 +22,7 @@ on:
 jobs:
   deploy-infra:
     name: Deploy Infrastructure
+    environment: ${{ inputs.ENVIRONMENT }}
     runs-on:
       group: scidomum-int-dev
       labels: scidomum-${{ inputs.ENVIRONMENT }}-ubuntu-amd64
