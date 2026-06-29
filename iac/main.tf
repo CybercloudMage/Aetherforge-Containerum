@@ -26,6 +26,7 @@ resource "azurerm_log_analytics_workspace" "container_apps" {
 
 # Data for the subnet the container app will reside on.
 data "azurerm_subnet" "container" {
+	provider 						 = azurerm.vnet
 	name                 = var.CONTAINER_APP_SUBNET_NAME
 	virtual_network_name = var.VNET_NAME
 	resource_group_name  = var.VNET_RESOURCE_GROUP_NAME
@@ -33,6 +34,7 @@ data "azurerm_subnet" "container" {
 
 # Data for the Azure VNet subnet that the container registry will reside on.
 data "azurerm_subnet" "container_registry" {
+	provider 						 = azurerm.vnet
 	name                 = var.CONTAINER_REGISTRY_SUBNET_NAME
 	virtual_network_name = var.VNET_NAME
 	resource_group_name  = var.VNET_RESOURCE_GROUP_NAME
@@ -40,6 +42,7 @@ data "azurerm_subnet" "container_registry" {
 
 # Data connection to the different private DNS zones for container registry. 
 data "azurerm_private_dns_zone" "container_registry" {
+	provider            = azurerm.vnet	
 	name                = "privatelink.azurecr.io"
 	resource_group_name = var.VNET_RESOURCE_GROUP_NAME
 }

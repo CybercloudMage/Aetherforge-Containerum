@@ -47,6 +47,15 @@ variable "SUBSCRIPTION_ID" {
   }
 }
 
+variable "VNET_SUBSCRIPTION_ID" {
+  description = "The subscription ID where the VNet is located"
+  type        = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$", var.VNET_SUBSCRIPTION_ID))
+    error_message = "VNET_SUBSCRIPTION_ID must be a valid GUID."
+  }
+}
+
 variable "VNET_RESOURCE_GROUP_NAME" {
   description = "The name of the resource group containing the VNet"
   type        = string

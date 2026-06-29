@@ -19,8 +19,15 @@ terraform {
 }
 
 provider "azurerm" {
-  subscription_id = var.SUBSCRIPTION_ID
   tenant_id       = var.TENANT_ID
+  subscription_id = var.SUBSCRIPTION_ID
+  features {}
+}
+
+provider "azurerm" {
+  alias           = "vnet"
+  tenant_id       = var.TENANT_ID
+  subscription_id = var.VNET_SUBSCRIPTION_ID
   features {}
 }
 
