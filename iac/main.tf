@@ -49,7 +49,7 @@ module "container_registry" {
 	source  = "Azure/avm-res-containerregistry-registry/azurerm"
 	version = "~> 0.4"
 
-	name                = "acr-aetherforge-${var.ENVIRONMENT}"
+	name                = "acraetherforge${var.ENVIRONMENT}"
 	location            = var.ROOT_RG_LOCATION
 	resource_group_name = module.root_rg.name
 	sku                 = "Premium"

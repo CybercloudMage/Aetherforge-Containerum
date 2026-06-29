@@ -26,6 +26,14 @@ Backend (state) secrets:
 - `TFSTATE_STORAGE_ACCOUNT_NAME`
 - `TFSTATE_CONTAINER_NAME`
 
+### Required GitHub environment variables
+
+- `AZURE_ROOT_LOCATION`
+- `AZURE_VNET_RESOURCE_GROUP_NAME`
+- `AZURE_VNET_NAME`
+- `AZURE_CONTAINER_APP_SUBNET_NAME`
+- `AZURE_CONTAINER_REGISTRY_SUBNET_NAME`
+
 ### Required RBAC for backend identity (`TFSTATE_CLIENT_ID`)
 
 At minimum, assign the following in the tfstate subscription:
