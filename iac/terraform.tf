@@ -24,13 +24,6 @@ provider "azurerm" {
   features {}
 }
 
-provider "azurerm" {
-  alias           = "vnet"
-  tenant_id       = var.TENANT_ID
-  subscription_id = var.VNET_SUBSCRIPTION_ID
-  features {}
-}
-
 provider "azapi" {
   subscription_id = var.SUBSCRIPTION_ID
   tenant_id       = var.TENANT_ID
