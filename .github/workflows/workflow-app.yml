@@ -1,0 +1,144 @@
+name: Reusable workflow for App Implementation
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'The environment to deploy to'
+        required: true
+        type: string
+
+jobs:
+  deploy-app:
+    name: Deploy App
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+    runs-on:
+      group: 'scidomum-int-${{ inputs.environment }}'
+      labels: 'scidomum-${{ inputs.environment }}-ubuntu-amd64'
+    env:
+      ARM_USE_OIDC: true
+      ARM_USE_AZUREAD: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Azure federated login
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          allow-no-subscriptions: true
+
+      - name: Ensure Container Apps extension is available
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+          az extension add --name containerapp --upgrade
+
+      - name: Prepare deployment variables
+        id: vars
+        run: |
+          environment="${{ inputs.environment }}"
+          resource_group_name="rg-aetherforge-${environment}"
+          acr_name="acr-aetherforge-${environment}"
+          container_app_name="ca-aetherforge-${environment}"
+          image_repo="aetherforge-web"
+          image_tag="${GITHUB_SHA}"
+          echo "resource_group_name=${resource_group_name}" >> "$GITHUB_OUTPUT"
+          echo "acr_name=${acr_name}" >> "$GITHUB_OUTPUT"
+          echo "container_app_name=${container_app_name}" >> "$GITHUB_OUTPUT"
+          echo "image_repo=${image_repo}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${image_tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push web image to ACR
+        run: |
+          mkdir -p app
+          cat > app/index.html << 'EOF'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Aetherforge Containerum</title>
+            <style>
+              :root { color-scheme: light; }
+              body {
+                margin: 0;
+                min-height: 100vh;
+                display: grid;
+                place-items: center;
+                font-family: Segoe UI, sans-serif;
+                background: radial-gradient(circle at top, #d7f6ff, #f3f8ff 60%, #ffffff);
+              }
+              main {
+                max-width: 48rem;
+                padding: 2rem;
+                border: 1px solid #c4d8ff;
+                border-radius: 1rem;
+                background: #ffffffcc;
+                box-shadow: 0 8px 32px rgba(25, 58, 127, 0.12);
+              }
+              h1 { margin-top: 0; color: #123a7f; }
+              p { line-height: 1.5; color: #2b3e63; }
+              code {
+                background: #eef4ff;
+                padding: 0.2rem 0.4rem;
+                border-radius: 0.4rem;
+                color: #143872;
+              }
+            </style>
+          </head>
+          <body>
+            <main>
+              <h1>Aetherforge Containerum</h1>
+              <p>This container image was built in GitHub Actions and deployed to Azure Container Apps.</p>
+              <p>Image tag: <code>${GITHUB_SHA}</code></p>
+            </main>
+          </body>
+          </html>
+          EOF
+
+          cat > app/Dockerfile << 'EOF'
+          FROM nginx:1.27-alpine
+          COPY index.html /usr/share/nginx/html/index.html
+          EXPOSE 80
+          EOF
+
+          az acr build \
+            --registry "${{ steps.vars.outputs.acr_name }}" \
+            --image "${{ steps.vars.outputs.image_repo }}:${{ steps.vars.outputs.image_tag }}" \
+            --file app/Dockerfile \
+            app
+
+      - name: Configure Container App to pull and run image from ACR
+        run: |
+          rg="${{ steps.vars.outputs.resource_group_name }}"
+          app="${{ steps.vars.outputs.container_app_name }}"
+          acr="${{ steps.vars.outputs.acr_name }}"
+          image_repo="${{ steps.vars.outputs.image_repo }}"
+          image_tag="${{ steps.vars.outputs.image_tag }}"
+
+          acr_login_server="$(az acr show --name "$acr" --resource-group "$rg" --query loginServer -o tsv)"
+          acr_id="$(az acr show --name "$acr" --resource-group "$rg" --query id -o tsv)"
+
+          # Ensure the app has a system-assigned identity before granting AcrPull.
+          az containerapp identity assign --name "$app" --resource-group "$rg" --system
+
+          principal_id="$(az containerapp show --name "$app" --resource-group "$rg" --query identity.principalId -o tsv)"
+
+          role_exists="$(az role assignment list --assignee-object-id "$principal_id" --scope "$acr_id" --role AcrPull --query "length(@)" -o tsv)"
+          if [ "$role_exists" = "0" ]; then
+            az role assignment create --assignee-object-id "$principal_id" --assignee-principal-type ServicePrincipal --scope "$acr_id" --role AcrPull
+          fi
+
+          az containerapp registry set --name "$app" --resource-group "$rg" --server "$acr_login_server" --identity system
+
+          az containerapp update \
+            --name "$app" \
+            --resource-group "$rg" \
+            --image "$acr_login_server/$image_repo:$image_tag"
+
+      

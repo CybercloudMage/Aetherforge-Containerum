@@ -46,3 +46,23 @@ variable "SUBSCRIPTION_ID" {
     error_message = "SUBSCRIPTION_ID must be a valid GUID."
   }
 }
+
+variable "VNET_RESOURCE_GROUP_NAME" {
+  description = "The name of the resource group containing the VNet"
+  type        = string
+}
+
+variable "VNET_NAME" {
+  description = "The name of the Azure VNet"
+  type        = string
+}
+
+variable "CONTAINER_APP_SUBNET_NAME" {
+  description = "The name of the subnet for the container app"
+  type        = string
+}
+
+variable "CONTAINER_REGISTRY_SUBNET_NAME" {
+  description = "The name of the subnet for the container registry"
+  type        = string
+}
