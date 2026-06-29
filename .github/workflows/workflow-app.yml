@@ -43,7 +43,7 @@ jobs:
         run: |
           environment="${{ inputs.environment }}"
           resource_group_name="rg-aetherforge-${environment}"
-          acr_name="acr-aetherforge-${environment}"
+          acr_name="acraetherforge${environment}"
           container_app_name="ca-aetherforge-${environment}"
           image_repo="aetherforge-web"
           image_tag="${GITHUB_SHA}"
