@@ -22,13 +22,3 @@ jobs:
     secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}
-
-  deploy-app:
-    needs: deploy-iac
-    uses: ./.github/workflows/workflow-app.yml
-    permissions:
-      contents: read
-      id-token: write
-    secrets: inherit
-    with:
-      environment: ${{ github.event.inputs.environment }}

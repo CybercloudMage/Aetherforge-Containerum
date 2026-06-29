@@ -25,23 +25,13 @@ jobs:
       TF_VAR_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_USE_OIDC: true
       ARM_USE_AZUREAD: true
-      TF_VAR_VNET_RESOURCE_GROUP_NAME: ${{ secrets.VNET_RESOURCE_GROUP_NAME }}
-      TF_VAR_VNET_NAME: ${{ secrets.VNET_NAME }}
-      TF_VAR_CONTAINER_APP_SUBNET_NAME: ${{ secrets.CONTAINER_APP_SUBNET_NAME }}
-      TF_VAR_CONTAINER_REGISTRY_SUBNET_NAME: ${{ secrets.CONTAINER_REGISTRY_SUBNET_NAME }}
-      TF_VAR_VNET_SUBSCRIPTION_ID: ${{ secrets.VNET_SUBSCRIPTION_ID }}
+      TF_VAR_AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      TF_VAR_AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
     steps:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.15.6
-
-      - name: Condition values and variables for use
-        id: condition_values
-        run: |
-          repository_name_lower="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          echo "repository_name_lower=$repository_name_lower" >> "$GITHUB_OUTPUT"
-          echo "Repository name: $repository_name_lower"
 
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -49,18 +39,12 @@ jobs:
           sparse-checkout: |
             iac
           sparse-checkout-cone-mode: false
-
-      - name: Move IaC contents to workspace root
-        run: |
-          cp -a iac/. ./
-          rm -rf iac
           
       - name: Azure federated login
         uses: azure/login@v3
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: >-
+            {"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}
           allow-no-subscriptions: true
           
       - name: Terraform Init
@@ -68,11 +52,12 @@ jobs:
           terraform init -input=false  \
           -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
           -backend-config="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
-          -backend-config="subscription_id=${{ secrets.TFSTATE_SUBSCRIPTION_ID }}" \
-          -backend-config="resource_group_name=${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}" \
+          -backend-config="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+          -backend-config="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+          -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP_NAME }}" \
           -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}" \
-          -backend-config="container_name=${{ steps.condition_values.outputs.repository_name_lower }}" \
-          -backend-config="key=${{ github.event.repository.name }}-${{ inputs.environment }}.tfstate"
+          -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" \
+          -backend-config="key=Aetherforge-Containerum-DEV.tfstate"
 
       - name: Validate and debug Terraform of Infrastructure
         run: |

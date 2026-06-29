@@ -7,26 +7,9 @@ variable "ENVIRONMENT" {
   }
 }
 
-variable "ROOT_RG_LOCATION" {
-  description = "The location for the root resource group"
+variable "ROOT_RG_NAME" {
+  description = "The name of the root resource group"
   type        = string
-  validation {
-    condition = contains([
-      "australiacentral", "australiacentral2", "australiaeast", "australiasoutheast",
-      "brazilsouth", "brazilsoutheast", "canadacentral", "canadaeast",
-      "centralindia", "centralus", "eastasia", "eastus", "eastus2",
-      "francecentral", "francesouth", "germanynorth", "germanywestcentral",
-      "israelcentral", "italynorth", "japaneast", "japanwest",
-      "koreacentral", "koreasouth", "mexicocentral", "newzealandnorth",
-      "northcentralus", "northeurope", "norwayeast", "norwaywest",
-      "polandcentral", "qatarcentral", "southafricanorth", "southafricawest",
-      "southcentralus", "southeastasia", "southindia", "spaincentral",
-      "swedencentral", "swedensouth", "switzerlandnorth", "switzerlandwest",
-      "uaecentral", "uaenorth", "uksouth", "ukwest",
-      "westcentralus", "westeurope", "westindia", "westus", "westus2", "westus3"
-    ], lower(var.ROOT_RG_LOCATION))
-    error_message = "ROOT_RG_LOCATION must be a valid Azure region short name (for example: eastus, westeurope, westus2)."
-  }
 }
 
 variable "TENANT_ID" {
@@ -47,31 +30,12 @@ variable "SUBSCRIPTION_ID" {
   }
 }
 
-variable "VNET_SUBSCRIPTION_ID" {
-  description = "The subscription ID where the VNet is located"
-  type        = string
-  validation {
-    condition     = can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$", var.VNET_SUBSCRIPTION_ID))
-    error_message = "VNET_SUBSCRIPTION_ID must be a valid GUID."
-  }
-}
-
-variable "VNET_RESOURCE_GROUP_NAME" {
-  description = "The name of the resource group containing the VNet"
+variable "AZURE_CLIENT_ID" {
+  description = "The Azure Client ID for authentication"
   type        = string
 }
 
-variable "VNET_NAME" {
-  description = "The name of the Azure VNet"
-  type        = string
-}
-
-variable "CONTAINER_APP_SUBNET_NAME" {
-  description = "The name of the subnet for the container app"
-  type        = string
-}
-
-variable "CONTAINER_REGISTRY_SUBNET_NAME" {
-  description = "The name of the subnet for the container registry"
+variable "AZURE_CLIENT_SECRET" {
+  description = "The Azure Client Secret for authentication"
   type        = string
 }
