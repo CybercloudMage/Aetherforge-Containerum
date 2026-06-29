@@ -29,6 +29,7 @@ jobs:
       TF_VAR_VNET_NAME: ${{ secrets.VNET_NAME }}
       TF_VAR_CONTAINER_APP_SUBNET_NAME: ${{ secrets.CONTAINER_APP_SUBNET_NAME }}
       TF_VAR_CONTAINER_REGISTRY_SUBNET_NAME: ${{ secrets.CONTAINER_REGISTRY_SUBNET_NAME }}
+      TF_VAR_VNET_SUBSCRIPTION_ID: ${{ secrets.VNET_SUBSCRIPTION_ID }}
     steps:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v4
